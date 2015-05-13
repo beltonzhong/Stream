@@ -3,7 +3,7 @@ import java.io.*;
 
 public class Stream {
   public static void main(String[] args) {
-    final String IP_ADDRESS = "128.54.178.135";
+    final String IP_ADDRESS = "128.54.179.237";
     final int LISTENING_PORT = 8080;
     InetAddress address = null;
     try {
@@ -14,6 +14,7 @@ public class Stream {
     }
     StreamConsole console = new StreamConsole();
     StreamServer server = new StreamServer(LISTENING_PORT, address, console);
+    //StreamServer server = new StreamServer(console);
     server.start();
   }
 }

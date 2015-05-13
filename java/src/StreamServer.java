@@ -10,20 +10,72 @@ public class StreamServer extends Thread {
 
   public StreamServer(int port, InetAddress ipAddress, StreamConsole console) {
     loggingConsole = console;
+    loggingConsole.log("Attempting to create a server at " + ipAddress.getHostName() + "...");
     try {
       servSock = new ServerSocket(port, BACKLOG_LENGTH, ipAddress);
-      loggingConsole.log("Created a new server at " + ipAddress + ":" + port);
+      loggingConsole.log("Created a new server at " + ipAddress.getHostName() + ":" + port + ".");
+      loggingConsole.log();
+    } catch(IOException e) {
+      loggingConsole.log("Failed to create a new server at " + ipAddress +
+                         ":" + port + ". Exiting.");
+      System.exit(1);
+    }
+  }
+
+  public StreamServer(StreamConsole console) {
+    loggingConsole = console;
+    loggingConsole.log("Attempting to create a server...");
+    try {
+      servSock = new ServerSocket();
+      loggingConsole.log("Created a new server.");
+      loggingConsole.log();
     } catch(IOException e) {
       e.printStackTrace();
-      loggingConsole.log("Failed to create a new server at " + ipAddress +
-                         ":" + port);
+      loggingConsole.log("Failed to create a new server. Exiting.");
+      System.exit(1);
+    }
+    try {
+      loggingConsole.log("Attempting to bind server to 127.0.0.1...");
+      servSock.bind(new InetSocketAddress("127.0.0.1", 8080), 1);
+      loggingConsole.log("Server bound to 127.0.0.1:8080.");
+      loggingConsole.log();
+    } catch(IOException e) {
+      loggingConsole.log("Failed to bind server to 127.0.0.1. Exiting.");
       System.exit(1);
     }
   }
   
   @Override
   public void run() {
+    Socket connectionSocket = null;
+    InetAddress client = null;
 
+    // Open the server and accept a connection
+    while(connectionSocket == null) {
+      try {
+        loggingConsole.log("Waiting for connection...");
+        connectionSocket = servSock.accept();
+      } catch (IOException e) {
+        loggingConsole.log("Connection failed. Error message:");
+        loggingConsole.log(e.getMessage() + ".");
+      }
+      client = connectionSocket.getInetAddress();
+      loggingConsole.log("Connection accepted from: " + client.getHostName() + ".");
+    }
+    
+    // After accepting a connection, close the server
+    while(!servSock.isClosed()) {
+      loggingConsole.log();
+      loggingConsole.log("Server closing...");
+      try {	
+        servSock.close();
+      } catch(IOException e) {	  
+        loggingConsole.log("Server close failed. Retrying...");
+	loggingConsole.log();
+      }
+    }
+    loggingConsole.log("Server closed.");
+    loggingConsole.log();
   }
 }
 

@@ -22,6 +22,7 @@ public class StreamConsole extends JFrame {
     this.setResizable(false);
     this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+    this.setVisible(true);
     this.validate();
 
     this.log("Console initialized...");
@@ -29,6 +30,10 @@ public class StreamConsole extends JFrame {
 
   public void log(String message) {
     textArea.append(message);
+    textArea.append("\n");
+  }
+
+  public void log() {
     textArea.append("\n");
   }
 }
