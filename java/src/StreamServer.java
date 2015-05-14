@@ -48,19 +48,19 @@ public class StreamServer extends Thread {
   @Override
   public void run() {
     Socket connectionSocket = null;
-    InetAddress client = null;
+    InetAddress clientAddress = null;
 
     // Open the server and accept a connection
+    loggingConsole.log("Waiting for connection...");
     while(connectionSocket == null) {
       try {
-        loggingConsole.log("Waiting for connection...");
         connectionSocket = servSock.accept();
+        clientAddress = connectionSocket.getInetAddress();
+        loggingConsole.log("Connection accepted from: " + clientAddress.getHostAddress() + ".");
       } catch (IOException e) {
         loggingConsole.log("Connection failed. Error message:");
         loggingConsole.log(e.getMessage() + ".");
       }
-      client = connectionSocket.getInetAddress();
-      loggingConsole.log("Connection accepted from: " + client.getHostAddress() + ".");
     }
     
     // After accepting a connection, close the server
