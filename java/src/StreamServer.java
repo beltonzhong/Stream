@@ -60,7 +60,7 @@ public class StreamServer extends Thread {
         loggingConsole.log(e.getMessage() + ".");
       }
       client = connectionSocket.getInetAddress();
-      loggingConsole.log("Connection accepted from: " + client.getHostName() + ".");
+      loggingConsole.log("Connection accepted from: " + client.getHostAddress() + ".");
     }
     
     // After accepting a connection, close the server
