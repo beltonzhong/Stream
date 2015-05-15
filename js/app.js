@@ -5,7 +5,8 @@ function requestOptions() {
 }
 
 function loadOptions(data) {
+  var parsedOptions = JSON.parse(data);
   $("#selector").append($("<option></option>")
                 .attr("value", "name")
-                .text(data.name));
+                .text(parsedOptions.name));
 }
