@@ -1,7 +1,7 @@
 JAVAC = javac
 JAVA = java
-JAVAC_FLAGS = -d ./classes/ -verbose
-JAVAC_CP = -cp "C:/cygwin64/home/beltonzhong/Stream/java/lib/*"
+JAVAC_FLAGS = -d ./classes/
+JAVAC_CP = -cp "./lib/*"
 JAVA_SRC = ./src/Stream.java ./src/StreamServer.java ./src/StreamConsole.java
 
 default:
