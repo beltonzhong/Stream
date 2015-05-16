@@ -157,29 +157,32 @@ public class StreamServer extends Thread {
 
   private void handleGetRequest(BufferedReader input, DataOutputStream output, String[] request) {
     // Get the requested file name
-    String filename = null;
+    String fileName = null;
+    String fileType = null;
 
-    filename = request[1].substring(1);
+    fileName = request[1].substring(1);
     
     // Get the requested file
     FileInputStream fileStream = null;
     
     // Special case of sending the options
-    if(filename.equals("options")) {
+    if(fileName.equals("options")) {
       this.sendOptionsList(output);
       return;
     }
 
     // Send index.html when no page is requested
-    if(filename.equals(""))
-      filename += "index.html";
+    if(fileName.equals(""))
+      fileName += "index.html";
+    else // Normal file request
+      fileType = fileName.substring(filename.indexOf('.') + 1);
 
-    loggingConsole.log("Attempting to open " + filename + "...");
+    loggingConsole.log("Attempting to open " + fileName + "...");
     try {
-      fileStream = new FileInputStream("../../" + filename);
-      loggingConsole.log("Successfully opened " + filename + ".");
+      fileStream = new FileInputStream("../../" + fileType + "/" + fileName);
+      loggingConsole.log("Successfully opened " + fileName + ".");
     } catch(FileNotFoundException e) {
-      loggingConsole.log("Failed to open " + filename + ". Exiting.");
+      loggingConsole.log("Failed to open " + fileName + ". Exiting.");
       loggingConsole.log("Sending 404...");
       try {
         output.writeBytes(constructHTTPHeader(404, ""));
@@ -195,7 +198,7 @@ public class StreamServer extends Thread {
     // Send the header
     loggingConsole.log("Sending 200...");
     try {
-      output.writeBytes(constructHTTPHeader(200, filename.substring(filename.indexOf('.') + 1)));
+      output.writeBytes(constructHTTPHeader(200, fileType));
       loggingConsole.log("Sent 200.");
     } catch(IOException e) {
       loggingConsole.log("Failed to send 200.");
@@ -203,15 +206,15 @@ public class StreamServer extends Thread {
     }
 
     // Send the file
-    loggingConsole.log("Attempting to send " + filename + "...");
+    loggingConsole.log("Attempting to send " + fileName + "...");
     try {
       while(fileStream.available() > 0) {
         output.write(fileStream.read());
       }
-      loggingConsole.log("Successfully sent " + filename + ".");
+      loggingConsole.log("Successfully sent " + fileName + ".");
       loggingConsole.log();
     } catch(IOException e) {
-      loggingConsole.log("Failed to send " + filename + ".");
+      loggingConsole.log("Failed to send " + fileName + ".");
       loggingConsole.log();
     }
 
