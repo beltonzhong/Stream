@@ -138,19 +138,19 @@ public class StreamServer extends Thread {
         loggingConsole.log("GET request received from " + connectionSocket.getInetAddress()
 	                   .getHostAddress() + ".");
         this.handleGetRequest(input, output, request);
-	break;
+        break;
       default:
-	loggingConsole.log("Received unsupported request type received from " + 
-	                   connectionSocket.getInetAddress().getHostAddress() + ".");
-	loggingConsole.log("Sending 501...");
-	try {
+        loggingConsole.log("Received unsupported request type received from " + 
+                           connectionSocket.getInetAddress().getHostAddress() + ".");
+        loggingConsole.log("Sending 501...");
+        try {
           output.writeBytes(constructHTTPHeader(501, ""));
-	  loggingConsole.log("Sent 501.");
-	  loggingConsole.log();
-	} catch(IOException e) {
+          loggingConsole.log("Sent 501.");
+          loggingConsole.log();
+        } catch(IOException e) {
           loggingConsole.log("Failed to send 501.");
-	  loggingConsole.log();
-	}
+          loggingConsole.log();
+        }
         return;
     }
   }
@@ -164,35 +164,38 @@ public class StreamServer extends Thread {
     // Get the requested file
     FileInputStream fileStream = null;
     
+    // Special case of sending the options
+    if(filename.equals("options")) {
+      this.sendOptionsList(output);
+      return;
+    }
+
+    // Send index.html when no page is requested
     if(filename.equals(""))
       filename += "index.html";
 
-      if(filename.equals("favicon.ico"))
-        filename = "favicon.png";
-      loggingConsole.log("Attempting to open " + filename + "...");
+    loggingConsole.log("Attempting to open " + filename + "...");
+    try {
+      fileStream = new FileInputStream("../../" + filename);
+      loggingConsole.log("Successfully opened " + filename + ".");
+    } catch(FileNotFoundException e) {
+      loggingConsole.log("Failed to open " + filename + ". Exiting.");
+      loggingConsole.log("Sending 404...");
       try {
-        fileStream = new FileInputStream("../../" + filename);
-        loggingConsole.log("Successfully opened " + filename + ".");
-      } catch(FileNotFoundException e) {
-        loggingConsole.log("Failed to open " + filename + ". Exiting.");
-        loggingConsole.log("Sending 404...");
-        try {
-          output.writeBytes(constructHTTPHeader(404, ""));
-          loggingConsole.log("Sent 404.");
-        } catch(IOException ex) {
-          loggingConsole.log("Failed to send 404.");
-          loggingConsole.log();
-        }
-        return;
+        output.writeBytes(constructHTTPHeader(404, ""));
+        loggingConsole.log("Sent 404.");
+      } catch(IOException ex) {
+        loggingConsole.log("Failed to send 404.");
+        loggingConsole.log();
+      }
+      return;
 
     }
     
     // Send the header
     loggingConsole.log("Sending 200...");
     try {
-
-        output.writeBytes(constructHTTPHeader(200, filename.substring(filename.indexOf('.') + 1)));
-
+      output.writeBytes(constructHTTPHeader(200, filename.substring(filename.indexOf('.') + 1)));
       loggingConsole.log("Sent 200.");
     } catch(IOException e) {
       loggingConsole.log("Failed to send 200.");
@@ -200,17 +203,17 @@ public class StreamServer extends Thread {
     }
 
     // Send the file
-      loggingConsole.log("Attempting to send " + filename + "...");
-      try {
-        while(fileStream.available() > 0) {
-          output.write(fileStream.read());
-        }
-        loggingConsole.log("Successfully sent " + filename + ".");
-        loggingConsole.log();
-      } catch(IOException e) {
-        loggingConsole.log("Failed to send " + filename + ".");
-        loggingConsole.log();
+    loggingConsole.log("Attempting to send " + filename + "...");
+    try {
+      while(fileStream.available() > 0) {
+        output.write(fileStream.read());
       }
+      loggingConsole.log("Successfully sent " + filename + ".");
+      loggingConsole.log();
+    } catch(IOException e) {
+      loggingConsole.log("Failed to send " + filename + ".");
+      loggingConsole.log();
+    }
 
     // Close the streams
     loggingConsole.log("Attempting to close streams...");
@@ -233,22 +236,22 @@ public class StreamServer extends Thread {
     switch(responseCode) {
       case 200:
         header += "200 OK";
-	break;
+        break;
       case 400:
         header += "400 Bad Request";
-	break;
+        break;
       case 403:
         header += "403 Forbidden";
-	break;
+        break;
       case 404:
         header += "404 Not Found";
-	break;
+        break;
       case 500:
         header += "500 Internal Server Error";
-	break;
+        break;
       case 501:
         header += "501 Not Implemented";
-	break;
+        break;
     }
     header += "\r\nConnection: keep-alive\r\nServer: Stream\r\n";
     switch(fileType) {
@@ -256,17 +259,60 @@ public class StreamServer extends Thread {
         header += "Content-Type: text/html\r\n";
         break;
       case "css":
-	header += "Content-Type: text/css\r\n";
-	break;
-      case "png":
+        header += "Content-Type: text/css\r\n";
+        break;
       case "ico":
         header += "Content-Type: image/x-icon\r\n";
-	break;
+        break;
       default:
-	break;
+        break;
     }
     header += "\r\n";
     return header;
+  }
+
+  private void sendOptionsList(DataOutputStream output) {
+    loggingConsole.log("Received request for options.");
+
+    // Send the header
+    loggingConsole.log("Sending 200...");
+    try {
+      output.writeBytes(constructHTTPHeader(200, "json"));
+      loggingConsole.log("Sent 200.");
+    } catch(IOException e) {
+      loggingConsole.log("Failed to send 200.");
+      loggingConsole.log();
+    }
+
+    // Send the options list
+    loggingConsole.log("Attempting to send options list...");
+    try {
+      output.writeBytes(this.constructOptionsListJSON());
+      loggingConsole.log("Successfully sent options list.");
+      loggingConsole.log();
+    } catch(IOException e) {
+      loggingConsole.log("Failed to send options list.");
+      loggingConsole.log();
+    }
+
+    // Close the streams
+    loggingConsole.log("Attempting to close output stream (no input stream " +
+                       "was created)...");
+    try {
+      output.close();
+      loggingConsole.log("Closed output stream.");
+      loggingConsole.log();
+    } catch(IOException e) {
+      loggingConsole.log("Failed to close output stream.");
+      loggingConsole.log();
+    }
+  }
+
+  private String constructOptionsListJSON() {
+    String json = "{\n";
+    json += "\t\"name\":\"ABCD\"\n";
+    json += "}";
+    return json;
   }
 }
 

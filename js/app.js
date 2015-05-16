@@ -1,5 +1,5 @@
 function requestOptions() {
-  $.get("options.json", function(data) {
+  $.get("options", function(data) {
     loadOptions(data);
   });
 }
