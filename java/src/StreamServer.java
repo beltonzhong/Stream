@@ -1,4 +1,6 @@
 import com.sun.jna.*;
+import com.sun.jna.platform.*;
+import com.sun.jna.platform.win32.*;
 
 import java.lang.*;
 import java.net.*;
@@ -21,6 +23,7 @@ public class StreamServer extends Thread {
     } catch(IOException e) {
       loggingConsole.log("Failed to create a new server at " + ipAddress +
                          ":" + port + ". Exiting.");
+      System.out.println("Failed to create a new server");
       System.exit(1);
     }
   }
@@ -125,6 +128,10 @@ public class StreamServer extends Thread {
     } catch(IOException e) {
       loggingConsole.log("Failed to read request. Exiting.");
       return;
+    } catch(NullPointerException n) {
+      loggingConsole.log("Empty request.");
+      loggingConsole.log();
+      return;
     }
 
     // Parse the request type
@@ -177,6 +184,12 @@ public class StreamServer extends Thread {
     // Send index.html when no page is requested
     if(fileName.equals("/"))
       fileName += "html/index.html";
+    if(fileName.equals("/favicon.ico")) {
+      try {
+        output.writeBytes(constructHTTPHeader(404, ""));
+      } catch(IOException e) {}
+      return;
+    }
     fileType = fileName.substring(fileName.indexOf('.') + 1);
 
     loggingConsole.log("Attempting to open " + fileName + "...");
@@ -269,6 +282,9 @@ public class StreamServer extends Thread {
       case "ico":
         header += "Content-Type: image/x-icon\r\n";
         break;
+      case "js":
+        header += "Content-Type: application/javascript";
+        break;
       default:
         break;
     }
@@ -314,11 +330,25 @@ public class StreamServer extends Thread {
   }
 
   private String constructOptionsListJSON() {
+    char buffer[];
     String json = "{\n\t\"names\":\n\t[\n";
-    String line = null;
-    try {
-    } catch(IOException e) {
+    List<WinDef.HWND> windowList = new ArrayList<WinDef.HWND>();
+
+    
+    WinDef.HWND window = User32.INSTANCE.GetForegroundWindow();
+    windowList.add(window);
+    /*
+    while(window != null)
+      windowList.add(window = User32.INSTANCE.GetWindow(window,
+        new WinDef.DWORD(User32.GW_HWNDNEXT)));
+    */
+    for(WinDef.HWND hwnd : windowList) {
+      int bufsiz = User32.INSTANCE.GetWindowTextLength(hwnd);
+      buffer = new char[bufsiz];
+      User32.INSTANCE.GetWindowText(hwnd, buffer, bufsiz);
+      json += "\t\t\"" + buffer + "\",\n";
     }
+    json += "\t\t\"\"\n\t]\n}";
     return json;
   }
 }

@@ -3,7 +3,7 @@ import java.io.*;
 
 public class Stream {
   public static void main(String[] args) {
-    final String IP_ADDRESS = "128.54.179.237";
+    final String IP_ADDRESS = "128.54.178.135";
     final int LISTENING_PORT = 8080;
     InetAddress address = null;
     try {
