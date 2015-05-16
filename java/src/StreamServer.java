@@ -1,6 +1,9 @@
+import com.sun.jna.*;
+
 import java.lang.*;
 import java.net.*;
 import java.io.*;
+import java.util.*;
 
 public class StreamServer extends Thread { 
 
@@ -311,9 +314,11 @@ public class StreamServer extends Thread {
   }
 
   private String constructOptionsListJSON() {
-    String json = "{\n";
-    json += "\t\"name\":\"ABCD\"\n";
-    json += "}";
+    String json = "{\n\t\"names\":\n\t[\n";
+    String line = null;
+    try {
+    } catch(IOException e) {
+    }
     return json;
   }
 }
