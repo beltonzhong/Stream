@@ -160,26 +160,25 @@ public class StreamServer extends Thread {
     String fileName = null;
     String fileType = null;
 
-    fileName = request[1].substring(1);
+    fileName = request[1];
     
     // Get the requested file
     FileInputStream fileStream = null;
     
     // Special case of sending the options
-    if(fileName.equals("options")) {
+    if(fileName.equals("/options")) {
       this.sendOptionsList(output);
       return;
     }
 
     // Send index.html when no page is requested
-    if(fileName.equals(""))
-      fileName += "index.html";
-    else // Normal file request
-      fileType = fileName.substring(filename.indexOf('.') + 1);
+    if(fileName.equals("/"))
+      fileName += "html/index.html";
+    fileType = fileName.substring(fileName.indexOf('.') + 1);
 
     loggingConsole.log("Attempting to open " + fileName + "...");
     try {
-      fileStream = new FileInputStream("../../" + fileType + "/" + fileName);
+      fileStream = new FileInputStream("../.." + fileName);
       loggingConsole.log("Successfully opened " + fileName + ".");
     } catch(FileNotFoundException e) {
       loggingConsole.log("Failed to open " + fileName + ". Exiting.");
